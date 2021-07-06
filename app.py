@@ -93,12 +93,11 @@ def book_list():
             if session.get('username'):
                 user = CustomerModel.find_one({"username": session.get('username')},
                                               {"_id": 1, "username": 1, "email": 1, "name": 1, "lastname": 1})
-                print(request.form.get('book_id'))
                 book_id = request.form.get('book_id')
                 book = BookModel.find_one({"_id": ObjectId(book_id)})
-                OrderModel.insert_one({"book_id":book["_id"],"customer_id":user["_id"]})
+                OrderModel.insert_one({"book_id": book["_id"], "customer_id": user["_id"]})
                 myquery = {"_id": ObjectId(book["_id"])}
-                newvalues = {"$set": {"count": book['count']-1}}
+                newvalues = {"$set": {"count": book['count'] - 1}}
                 BookModel.update_one(myquery, newvalues)
                 return redirect("/books", code=302)
     else:
@@ -113,50 +112,59 @@ def costumer_book_list():
                 {
                     "$lookup":
                         {
-                            "from": "orders",
-                            "localField": "_id",
-                            "foreignField": "book_id",
-                            "as": "orders"
+                            "from": "books",
+                            "localField": "book_id",
+                            "foreignField": "_id",
+                            "as": "book"
                         }
                 },
-                {"$unwind": "$orders"},
+                {"$unwind": "$book"},
                 {
                     "$lookup":
                         {
-                            "from": "orders",
+                            "from": "customers",
                             "localField": "customer_id",
                             "foreignField": "_id",
-                            "as": "customers"
+                            "as": "customer"
                         }
                 },
-                {"$unwind": "customers"},
+                {"$unwind": "$customer"},
+                {
+                    "$match": {
+                        "customer.username": session.get('username')
+                    }
+                }
             ]
             book_name = request.args.get('name', None)
 
-            if book_name:
-                pipeline.append(
-                    {
-                        "$match": {
-                            "name": book_name
-                        }
-                    }
-                )
-            books = BookModel.aggregate(pipeline)
-            print(books)
-            return render_template('books.html', books=books)
+            # if book_name:
+            #     pipeline.append(
+            #         {
+            #             "$match": {
+            #                 "name": book_name
+            #             }
+            #         }
+            #     )
+            orders = OrderModel.aggregate(pipeline)
+            import pprint
+            # for i in orders:
+            #     print(i)
+            return render_template('costumer_books.html', orders=orders)
 
         if request.method == 'POST':
             if session.get('username'):
                 user = CustomerModel.find_one({"username": session.get('username')},
                                               {"_id": 1, "username": 1, "email": 1, "name": 1, "rate": 1})
-                book_id = request.form['book_id']
-                book = BookModel.find_one({"_id": book_id})
-                OrderModel.insert_one({"book_id":book["_id"],"customer_id":user["_id"]})
-                myquery = {"_id": book["_id"]}
-                newvalues = {"$set": {"count": book.count-1}}
-                BookModel.update_one(myquery, newvalues)
-                return redirect("/books", code=302)
+                order_id = request.form.get('order_id')
+                order = OrderModel.find_one({"_id": ObjectId(order_id)})
+                if order:
+                    myquery = {"_id": order["book_id"]}
+                    newvalues = {"$inc": {"count": 1}}
+                    BookModel.update_one(myquery, newvalues)
+                    OrderModel.delete_one({"_id": ObjectId(order_id)})
+                return redirect("/borrowed-books", code=302)
     else:
         return Response("permission denied <a href=\"/login\">first login</a>", status=403)
+
 
 app.run()

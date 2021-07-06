@@ -20,24 +20,24 @@
     <h2 > List of user's books</h2>
     <table >
       <tr>
-        <th>id</th>
-        <th>book name</th>
+        <th>order id</th>
+        <th>book title</th>
         <th>description</th>
         <th>publication date</th>
         <th>rate</th>
         <th>count</th>
         <th>#</th>
       </tr>
-     {% for book in books %}
-         <form action="." method="POST">
+     {% for order in orders %}
+         <form action="/borrowed-books" method="POST">
          <tr>
-         <td>{{ book._id }}</td>
-        <td>{{ book.name }}</td>
-        <td>{{ book.description }}</td>
-        <td>{{ book.publication_date }}</td>
-        <td>{{ book.rate }}</td>
-        <td>{{ book.count }}</td>
-        <td><button type="submit" name="book_id" value="{{ book._id }}">give back</button></td>
+         <td>{{ order._id }}</td>
+        <td>{{ order.book.name }}</td>
+        <td>{{ order.book.description }}</td>
+        <td>{{ order.book.publication_date }}</td>
+        <td>{{ order.book.rate }}</td>
+        <td>{{ order.book.count }}</td>
+        <td><button type="submit" name="order_id" value="{{ order._id }}">give back</button></td>
         </tr>
          </form>
      {% endfor %}
