@@ -167,4 +167,95 @@ def costumer_book_list():
         return Response("permission denied <a href=\"/login\">first login</a>", status=403)
 
 
+
+
+#########################################
+### Admin
+######################################
+
+@app.route('/admin-login', methods=['POST', 'get'])
+def admin_login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        customer = CustomerModel.find_one(
+            {"username": username, 'password': password, "is_admin":True},
+        )
+        if customer:
+            session['admin_username'] = username
+            return redirect("/profile", code=302)
+        return Response("your pass or user name is incorrect", status=400)
+
+    elif request.method == 'GET':
+        return render_template('admin-login.html')
+
+
+@app.route('/admin/borrowed-books', methods=['GET', 'POST'])
+def admin_management_costumer_book_list():
+    if session.get('admin_username'):
+        if request.method == 'GET':
+            pipeline = [
+                {
+                    "$lookup":
+                        {
+                            "from": "books",
+                            "localField": "book_id",
+                            "foreignField": "_id",
+                            "as": "book"
+                        }
+                },
+                {"$unwind": "$book"},
+                {
+                    "$lookup":
+                        {
+                            "from": "customers",
+                            "localField": "customer_id",
+                            "foreignField": "_id",
+                            "as": "customer"
+                        }
+                },
+                {"$unwind": "$customer"},
+            ]
+            book_name = request.args.get('book_name', None)
+            username = request.args.get('username', None)
+
+            if book_name:
+                pipeline.append(
+                    {
+                        "$match": {
+                            "book.name": book_name
+                        }
+                    }
+                )
+            if username:
+                if book_name:
+                    pipeline.append(
+                        {
+                            "$match": {
+                                "$customer": username
+                            }
+                        }
+                    )
+            orders = OrderModel.aggregate(pipeline)
+            import pprint
+            # for i in orders:
+            #     print(i)
+            return render_template('admin_management_costumer_books.html', orders=orders)
+        if request.method == 'POST':
+            order_id = request.form.get('order_id')
+            order = OrderModel.find_one({"_id": ObjectId(order_id)})
+            if order:
+                myquery = {"_id": order["book_id"]}
+                newvalues = {"$inc": {"count": 1}}
+                BookModel.update_one(myquery, newvalues)
+                OrderModel.delete_one({"_id": ObjectId(order_id)})
+            return redirect("/admin/borrowed-books", code=302)
+    else:
+        return Response("permission denied <a href=\"/admin-login\">first login</a>", status=403)
+
+
+
+
+
+
 app.run()
