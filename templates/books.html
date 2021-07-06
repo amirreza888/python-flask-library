@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <link rel="shortcut icon" href="img/favicon.html">
+
+    <title>books </title>
+
+
+</head>
+
+<body>
+
+    <!-- page start-->
+
+    <table style="width:100%">
+      <tr>
+        <th>id</th>
+        <th>book name</th>
+        <th>description</th>
+        <th>publication date</th>
+      </tr>
+
+     {% for book in books %}
+         <tr>
+        <td>book.name</td>
+        <td>book.description</td>
+        <td>book.publication_date</td>
+      </tr>
+     {% endfor %}
+
+    </table>
+
+
+
+
+
+</body>
+</html>
