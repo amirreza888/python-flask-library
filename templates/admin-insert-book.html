@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+
+
+    <title>insert book</title>
+
+</head>
+
+  <body class="login-body">
+
+      <form action=" http://localhost:5000/admin/insert-book" method="POST">
+        <h2 > register</h2>
+        <div class="login-wrap">
+            <input type="text" name="title" class="form-control" placeholder="title" autofocus>
+            <input type="text" name="description" class="form-control" placeholder="description">
+            <input type="number" name="count" class="form-control" placeholder="count">
+            <input type="number" name="rate" class="form-control" placeholder="rate">
+            <input type="text" name="publication_date" class="form-control" placeholder="publication_date">
+            <button type="submit">insert</button>
+        </div>
+      </form>
+
+  <p>
+          <h2 > List of books</h2>
+    <table >
+      <tr>
+        <th>book id</th>
+        <th>book title</th>
+        <th>description</th>
+        <th>publication date</th>
+        <th>rate</th>
+        <th>count</th>
+      </tr>
+     {% for book in books %}
+         <form method="POST">
+         <tr>
+         <td>{{ book._id }}</td>
+        <td>{{ book.name }}</td>
+        <td>{{ book.description }}</td>
+        <td>{{ book.publication_date }}</td>
+        <td>{{ book.rate }}</td>
+        <td>{{ book.count }}</td>
+        </tr>
+         </form>
+     {% endfor %}
+
+    </table>
+  </p>
+
+  </body>
+</html>

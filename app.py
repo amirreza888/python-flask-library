@@ -254,8 +254,43 @@ def admin_management_costumer_book_list():
         return Response("permission denied <a href=\"/admin-login\">first login</a>", status=403)
 
 
+@app.route('/admin/insert-book', methods=['POST', 'get'])
+def admin_insert_book():
+    if session.get('admin_username'):
+        if request.method == 'POST':
+            title = request.form['title']
+            description = request.form['description']
+            count = request.form['count']
+            rate = request.form['rate']
+            publication_date = request.form['publication_date']
+            book = BookModel.insert_one({
+                "name":title,
+                "description":description,
+                "count":count,
+                "rate":rate,
+                "publication_date":publication_date
+            })
 
+            return redirect("/admin/insert-book", code=302)
 
+        elif request.method == 'GET':
+            query = {}
+            book_name = request.args.get('name', None)
+            if book_name:
+                query['name'] = {"$regex": "^" + book_name}
+            books = BookModel.find(query,
+                                   {
+                                       "_id": 1,
+                                       "name": 1,
+                                       "description": 1,
+                                       "publication_date": 1,
+                                       "rate": 1,
+                                       "count": 1
+                                   })
+
+            return render_template('admin-insert-book.html',books=books)
+    else:
+        return Response("permission denied <a href=\"/admin-login\">first login</a>", status=403)
 
 
 app.run()

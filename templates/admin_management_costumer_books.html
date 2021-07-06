@@ -17,7 +17,7 @@
 <body>
 
     <!-- page start-->
-    <h2 > List of user's books</h2>
+    <h2 > List of books of users</h2>
     <table >
       <tr>
         <th>order id</th>
@@ -32,7 +32,7 @@
         <th>#</th>
       </tr>
      {% for order in orders %}
-         <form action="/borrowed-books" method="POST">
+         <form action="/admin/borrowed-books" method="POST">
          <tr>
          <td>{{ order._id }}</td>
         <td>{{ order.book.name }}</td>
