@@ -68,7 +68,7 @@ def profile():
 
 
 @app.route('/books', methods=['GET'])
-def profile():
+def book_list():
     query = {}
     book_name = request.args.get('name', None)
     if book_name:
