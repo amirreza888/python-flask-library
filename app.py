@@ -27,6 +27,7 @@ def register():
         name = request.form['name']
         lastname = request.form['lastname']
         data = {"username": username, "password": password, "email": email, "name": name, "lastname": lastname}
+
         CustomerModel.insert_one(data)
         return Response("you are registered successfully\n <a href=\"/login\">login</a>", status=200)
 
@@ -72,12 +73,16 @@ def profile():
 
 @app.route('/books', methods=['GET', 'POST'])
 def book_list():
+
     if session.get('username'):
         if request.method == 'GET':
+
             query = {"count": {"$gt": 0}}
             book_name = request.args.get('name', None)
+
             if book_name:
                 query['name'] = {"$regex": "^" + book_name}
+
             books = BookModel.find(query,
                                    {
                                        "_id": 1,
@@ -96,9 +101,12 @@ def book_list():
                 book_id = request.form.get('book_id')
                 book = BookModel.find_one({"_id": ObjectId(book_id)})
                 OrderModel.insert_one({"book_id": book["_id"], "customer_id": user["_id"]})
+
                 myquery = {"_id": ObjectId(book["_id"])}
                 newvalues = {"$set": {"count": book['count'] - 1}}
                 BookModel.update_one(myquery, newvalues)
+
+
                 return redirect("/books", code=302)
     else:
         return Response("permission denied <a href=\"/login\">first login</a>", status=403)
@@ -118,7 +126,9 @@ def costumer_book_list():
                             "as": "book"
                         }
                 },
-                {"$unwind": "$book"},
+                {
+                    "$unwind": "$book"
+                },
                 {
                     "$lookup":
                         {
@@ -137,14 +147,14 @@ def costumer_book_list():
             ]
             book_name = request.args.get('name', None)
 
-            # if book_name:
-            #     pipeline.append(
-            #         {
-            #             "$match": {
-            #                 "name": book_name
-            #             }
-            #         }
-            #     )
+            if book_name:
+                pipeline.append(
+                    {
+                        "$match": {
+                            "name": book_name
+                        }
+                    }
+                )
             orders = OrderModel.aggregate(pipeline)
             import pprint
             # for i in orders:
@@ -157,16 +167,16 @@ def costumer_book_list():
                                               {"_id": 1, "username": 1, "email": 1, "name": 1, "rate": 1})
                 order_id = request.form.get('order_id')
                 order = OrderModel.find_one({"_id": ObjectId(order_id)})
+
                 if order:
                     myquery = {"_id": order["book_id"]}
                     newvalues = {"$inc": {"count": 1}}
                     BookModel.update_one(myquery, newvalues)
                     OrderModel.delete_one({"_id": ObjectId(order_id)})
+
                 return redirect("/borrowed-books", code=302)
     else:
         return Response("permission denied <a href=\"/login\">first login</a>", status=403)
-
-
 
 
 #########################################
@@ -179,7 +189,7 @@ def admin_login():
         username = request.form['username']
         password = request.form['password']
         customer = CustomerModel.find_one(
-            {"username": username, 'password': password, "is_admin":True},
+            {"username": username, 'password': password, "is_admin": True},
         )
         if customer:
             session['admin_username'] = username
@@ -204,7 +214,9 @@ def admin_management_costumer_book_list():
                             "as": "book"
                         }
                 },
-                {"$unwind": "$book"},
+                {
+                    "$unwind": "$book"
+                },
                 {
                     "$lookup":
                         {
@@ -241,9 +253,11 @@ def admin_management_costumer_book_list():
             # for i in orders:
             #     print(i)
             return render_template('admin_management_costumer_books.html', orders=orders)
+
         if request.method == 'POST':
             order_id = request.form.get('order_id')
             order = OrderModel.find_one({"_id": ObjectId(order_id)})
+
             if order:
                 myquery = {"_id": order["book_id"]}
                 newvalues = {"$inc": {"count": 1}}
@@ -263,12 +277,13 @@ def admin_insert_book():
             count = request.form['count']
             rate = request.form['rate']
             publication_date = request.form['publication_date']
+
             book = BookModel.insert_one({
-                "name":title,
-                "description":description,
-                "count":count,
-                "rate":rate,
-                "publication_date":publication_date
+                "name": title,
+                "description": description,
+                "count": count,
+                "rate": rate,
+                "publication_date": publication_date
             })
 
             return redirect("/admin/insert-book", code=302)
@@ -288,7 +303,7 @@ def admin_insert_book():
                                        "count": 1
                                    })
 
-            return render_template('admin-insert-book.html',books=books)
+            return render_template('admin-insert-book.html', books=books)
     else:
         return Response("permission denied <a href=\"/admin-login\">first login</a>", status=403)
 
