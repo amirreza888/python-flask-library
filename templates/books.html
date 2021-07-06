@@ -5,6 +5,11 @@
     <link rel="shortcut icon" href="img/favicon.html">
 
     <title>books </title>
+    <style>
+    table, th, td {
+      border: 1px solid black;
+    }
+</style>
 
 
 </head>
@@ -12,21 +17,24 @@
 <body>
 
     <!-- page start-->
-
-    <table style="width:100%">
+    <h2 > List of available books</h2>
+    <table >
       <tr>
         <th>id</th>
         <th>book name</th>
         <th>description</th>
         <th>publication date</th>
+        <th>rate</th>
+        <th>count</th>
       </tr>
-
      {% for book in books %}
          <tr>
-        <td>book.name</td>
-        <td>book.description</td>
-        <td>book.publication_date</td>
-        <td>book.rate</td>
+         <td>{{ book._id }}</td>
+        <td>{{ book.name }}</td>
+        <td>{{ book.description }}</td>
+        <td>{{ book.publication_date }}</td>
+        <td>{{ book.rate }}</td>
+        <td>{{ book.count }}</td>
       </tr>
      {% endfor %}
 

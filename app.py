@@ -58,7 +58,7 @@ def logout():
 def profile():
     if session.get('username'):
         result = CustomerModel.find_one({"username": session.get('username')},
-                                        {"_id": 1, "username": 1, "email": 1, "name": 1, "lastname": 1})
+                                        {"_id": 1, "username": 1, "email": 1, "name": 1, "rate": 1})
 
         if request:
             return render_template('profile.html', result=result)
@@ -68,13 +68,20 @@ def profile():
 
 @app.route('/books', methods=['GET'])
 def book_list():
-    CustomerModel.insert_one({"name": "zadi", "description": "good book", "rate": 4, "publication_date":"2011"})
-    query = {}
+    query = {"count": {"$gt": 1}}
     book_name = request.args.get('name', None)
     if book_name:
         query['name'] = {"$regex": "^" + book_name}
-    books = BookModel.find(query)
-    return render_template('books.html', result=books)
+    books = BookModel.find(query,
+                           {
+                               "_id": 1,
+                               "name": 1,
+                               "description": 1,
+                               "publication_date": 1,
+                               "rate": 1,
+                               "count": 1
+                           })
+    return render_template('books.html', books=books)
 
 
 if __name__ == '__main__':
