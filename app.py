@@ -66,17 +66,15 @@ def profile():
     return Response("permission denied <a href=\"/login\">first login</a>", status=403)
 
 
-
 @app.route('/books', methods=['GET'])
 def book_list():
+    CustomerModel.insert_one({"name": "zadi", "description": "good book", "rate": 4, "publication_date":"2011"})
     query = {}
     book_name = request.args.get('name', None)
     if book_name:
-        query['name'] = { "$regex": "^" + book_name }
+        query['name'] = {"$regex": "^" + book_name}
     books = BookModel.find(query)
     return render_template('books.html', result=books)
-
-
 
 
 if __name__ == '__main__':
