@@ -1,10 +1,13 @@
 from os import name
+
+from bson import ObjectId
 from flask import Flask, session, redirect, url_for, escape, request, render_template, Response
 
 import pymongo
 import hashlib
 
 app = Flask(__name__)
+# app.config["DEBUG"] = True
 app.secret_key = 'secret'
 
 myclient = pymongo.MongoClient("mongodb://localhost:27017/")
@@ -12,6 +15,7 @@ mydb = myclient["library"]
 
 CustomerModel = mydb["customers"]
 BookModel = mydb["books"]
+OrderModel = mydb["orders"]
 
 
 @app.route('/register', methods=['POST', 'GET'])
@@ -58,7 +62,7 @@ def logout():
 def profile():
     if session.get('username'):
         result = CustomerModel.find_one({"username": session.get('username')},
-                                        {"_id": 1, "username": 1, "email": 1, "name": 1, "rate": 1})
+                                        {"_id": 1, "username": 1, "email": 1, "name": 1, "lastname": 1})
 
         if request:
             return render_template('profile.html', result=result)
@@ -66,23 +70,93 @@ def profile():
     return Response("permission denied <a href=\"/login\">first login</a>", status=403)
 
 
-@app.route('/books', methods=['GET'])
+@app.route('/books', methods=['GET', 'POST'])
 def book_list():
-    query = {"count": {"$gt": 1}}
-    book_name = request.args.get('name', None)
-    if book_name:
-        query['name'] = {"$regex": "^" + book_name}
-    books = BookModel.find(query,
-                           {
-                               "_id": 1,
-                               "name": 1,
-                               "description": 1,
-                               "publication_date": 1,
-                               "rate": 1,
-                               "count": 1
-                           })
-    return render_template('books.html', books=books)
+    if session.get('username'):
+        if request.method == 'GET':
+            query = {"count": {"$gt": 0}}
+            book_name = request.args.get('name', None)
+            if book_name:
+                query['name'] = {"$regex": "^" + book_name}
+            books = BookModel.find(query,
+                                   {
+                                       "_id": 1,
+                                       "name": 1,
+                                       "description": 1,
+                                       "publication_date": 1,
+                                       "rate": 1,
+                                       "count": 1
+                                   })
+            return render_template('books.html', books=books)
+
+        if request.method == 'POST':
+            if session.get('username'):
+                user = CustomerModel.find_one({"username": session.get('username')},
+                                              {"_id": 1, "username": 1, "email": 1, "name": 1, "lastname": 1})
+                print(request.form.get('book_id'))
+                book_id = request.form.get('book_id')
+                book = BookModel.find_one({"_id": ObjectId(book_id)})
+                OrderModel.insert_one({"book_id":book["_id"],"customer_id":user["_id"]})
+                myquery = {"_id": ObjectId(book["_id"])}
+                newvalues = {"$set": {"count": book['count']-1}}
+                BookModel.update_one(myquery, newvalues)
+                return redirect("/books", code=302)
+    else:
+        return Response("permission denied <a href=\"/login\">first login</a>", status=403)
 
 
-if __name__ == '__main__':
-    app.run()
+@app.route('/borrowed-books', methods=['GET', 'POST'])
+def costumer_book_list():
+    if session.get('username'):
+        if request.method == 'GET':
+            pipeline = [
+                {
+                    "$lookup":
+                        {
+                            "from": "orders",
+                            "localField": "_id",
+                            "foreignField": "book_id",
+                            "as": "orders"
+                        }
+                },
+                {"$unwind": "$orders"},
+                {
+                    "$lookup":
+                        {
+                            "from": "orders",
+                            "localField": "customer_id",
+                            "foreignField": "_id",
+                            "as": "customers"
+                        }
+                },
+                {"$unwind": "customers"},
+            ]
+            book_name = request.args.get('name', None)
+
+            if book_name:
+                pipeline.append(
+                    {
+                        "$match": {
+                            "name": book_name
+                        }
+                    }
+                )
+            books = BookModel.aggregate(pipeline)
+            print(books)
+            return render_template('books.html', books=books)
+
+        if request.method == 'POST':
+            if session.get('username'):
+                user = CustomerModel.find_one({"username": session.get('username')},
+                                              {"_id": 1, "username": 1, "email": 1, "name": 1, "rate": 1})
+                book_id = request.form['book_id']
+                book = BookModel.find_one({"_id": book_id})
+                OrderModel.insert_one({"book_id":book["_id"],"customer_id":user["_id"]})
+                myquery = {"_id": book["_id"]}
+                newvalues = {"$set": {"count": book.count-1}}
+                BookModel.update_one(myquery, newvalues)
+                return redirect("/books", code=302)
+    else:
+        return Response("permission denied <a href=\"/login\">first login</a>", status=403)
+
+app.run()

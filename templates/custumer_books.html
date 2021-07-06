@@ -17,7 +17,7 @@
 <body>
 
     <!-- page start-->
-    <h2 > List of available books</h2>
+    <h2 > List of user's books</h2>
     <table >
       <tr>
         <th>id</th>
@@ -29,7 +29,7 @@
         <th>#</th>
       </tr>
      {% for book in books %}
-         <form method="POST">
+         <form action="." method="POST">
          <tr>
          <td>{{ book._id }}</td>
         <td>{{ book.name }}</td>
@@ -37,7 +37,7 @@
         <td>{{ book.publication_date }}</td>
         <td>{{ book.rate }}</td>
         <td>{{ book.count }}</td>
-        <td><button type="submit" name="book_id" value="{{ book._id }}">borrow</button></td>
+        <td><button type="submit" name="book_id" value="{{ book._id }}">give back</button></td>
         </tr>
          </form>
      {% endfor %}
