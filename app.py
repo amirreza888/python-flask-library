@@ -1,3 +1,4 @@
+from datetime import datetime
 from os import name
 
 from bson import ObjectId
@@ -100,7 +101,7 @@ def book_list():
                                               {"_id": 1, "username": 1, "email": 1, "name": 1, "lastname": 1})
                 book_id = request.form.get('book_id')
                 book = BookModel.find_one({"_id": ObjectId(book_id)})
-                OrderModel.insert_one({"book_id": book["_id"], "customer_id": user["_id"]})
+                OrderModel.insert_one({"book_id": book["_id"], "customer_id": user["_id"],"borrowed_date":datetime.now()})
 
                 myquery = {"_id": ObjectId(book["_id"])}
                 newvalues = {"$set": {"count": book['count'] - 1}}
@@ -192,8 +193,8 @@ def admin_login():
             {"username": username, 'password': password, "is_admin": True},
         )
         if customer:
-            session['admin_username'] = username
-            return redirect("/profile", code=302)
+            session['username'] = username
+            return redirect("/admin/insert-book", code=302)
         return Response("your pass or user name is incorrect", status=400)
 
     elif request.method == 'GET':
@@ -202,7 +203,7 @@ def admin_login():
 
 @app.route('/admin/borrowed-books', methods=['GET', 'POST'])
 def admin_management_costumer_book_list():
-    if session.get('admin_username'):
+    if CustomerModel.find_one({"username":session.get('username'),"is_admin":True}):
         if request.method == 'GET':
             pipeline = [
                 {
@@ -270,7 +271,7 @@ def admin_management_costumer_book_list():
 
 @app.route('/admin/insert-book', methods=['POST', 'get'])
 def admin_insert_book():
-    if session.get('admin_username'):
+    if CustomerModel.find_one({"username":session.get('username'),"is_admin":True}):
         if request.method == 'POST':
             title = request.form['title']
             description = request.form['description']

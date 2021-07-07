@@ -5,32 +5,38 @@
     <link rel="shortcut icon" href="img/favicon.html">
 
     <title>books </title>
-    <style>
-    table, th, td {
-      border: 1px solid black;
-    }
-</style>
+{#    <style>#}
+{#    table, th, td {#}
+{#      border: 1px solid black;#}
+{#    }#}
+{#</style>#}
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
 
 
 </head>
 
 <body>
-
+    <div class="container jumbotron">
     <!-- page start-->
     <h2 > List of books of users</h2>
-    <table >
+    <table class="table table-striped">
+    <thead>
       <tr>
         <th>order id</th>
         <th>book title</th>
         <th>description</th>
         <th>publication date</th>
         <th>rate</th>
-        <th>count</th>
+        <th>borrowed date</th>
         <th>username</th>
         <th>name</th>
         <th>email</th>
         <th>#</th>
       </tr>
+      </thead>
+    <tbody>
      {% for order in orders %}
          <form action="/admin/borrowed-books" method="POST">
          <tr>
@@ -39,20 +45,22 @@
         <td>{{ order.book.description }}</td>
         <td>{{ order.book.publication_date }}</td>
         <td>{{ order.book.rate }}</td>
-        <td>{{ order.book.count }}</td>
-        <td>{{ order.costumer.username }}</td>
-        <td>{{ order.costumer.name }}</td>
-        <td>{{ order.costumer.email }}</td>
-        <td><button type="submit" name="order_id" value="{{ order._id }}">give back</button></td>
+        <td>{{ order.borrowed_date }}</td>
+        <td>{{ order.customer.username }}</td>
+        <td>{{ order.customer.name }}</td>
+        <td>{{ order.customer.email }}</td>
+        <td><button type="submit" name="order_id" value="{{ order._id }}" class="btn btn-success">give back</button></td>
         </tr>
          </form>
      {% endfor %}
-
+    </tbody>
     </table>
+    </div>
 
 
 
-
-
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
 </body>
 </html>

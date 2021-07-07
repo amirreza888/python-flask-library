@@ -5,26 +5,26 @@
 
 
     <title>insert book</title>
-
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
 </head>
 
   <body class="login-body">
-
+    <div class="container jumbotron">
       <form action=" http://localhost:5000/admin/insert-book" method="POST">
-        <h2 > register</h2>
+        <h2 > add book</h2>
         <div class="login-wrap">
             <input type="text" name="title" class="form-control" placeholder="title" autofocus>
             <input type="text" name="description" class="form-control" placeholder="description">
             <input type="number" name="count" class="form-control" placeholder="count">
             <input type="number" name="rate" class="form-control" placeholder="rate">
             <input type="text" name="publication_date" class="form-control" placeholder="publication_date">
-            <button type="submit">insert</button>
+            <button type="submit" class="btn btn-info">insert</button>
         </div>
       </form>
 
   <p>
           <h2 > List of books</h2>
-    <table >
+    <table class="table table-striped">
       <tr>
         <th>book id</th>
         <th>book title</th>
@@ -48,6 +48,9 @@
 
     </table>
   </p>
-
+    </div>
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
   </body>
 </html>
