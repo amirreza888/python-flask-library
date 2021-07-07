@@ -12,6 +12,10 @@
 <div class="container jumbotron">
       <form action=" http://localhost:5000/register" method="POST">
         <h2 > register</h2>
+          {% if error %}
+              <div class="alert alert-danger">{{ error }}</div>
+
+          {% endif %}
         <div class="login-wrap">
             <input type="text" name="username" class="form-control" placeholder=" username " autofocus>
             <input type="password" name="password" class="form-control" placeholder="password">

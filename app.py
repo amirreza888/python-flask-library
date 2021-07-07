@@ -24,13 +24,15 @@ def register():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
+        if CustomerModel.find_one({"username":username}):
+            return render_template('register.html',error="این یوزرنیم قبلا ثبت شده")
         email = request.form['email']
         name = request.form['name']
         lastname = request.form['lastname']
         data = {"username": username, "password": password, "email": email, "name": name, "lastname": lastname}
 
         CustomerModel.insert_one(data)
-        return Response("you are registered successfully\n <a href=\"/login\">login</a>", status=200)
+        return redirect('/login',code=302)
 
     if request.method == 'GET':
         return render_template('register.html')
@@ -195,10 +197,10 @@ def admin_login():
         if customer:
             session['username'] = username
             return redirect("/admin/insert-book", code=302)
-        return Response("your pass or user name is incorrect", status=400)
+        return render_template('admin-panel.html')
 
     elif request.method == 'GET':
-        return render_template('admin-login.html')
+        return redirect('admin/panel')
 
 
 @app.route('/admin/borrowed-books', methods=['GET', 'POST'])
@@ -307,6 +309,16 @@ def admin_insert_book():
             return render_template('admin-insert-book.html', books=books)
     else:
         return Response("permission denied <a href=\"/admin-login\">first login</a>", status=403)
+
+
+@app.route('/admin/panel', methods=['GET'])
+def profile():
+    result =CustomerModel.find_one({"username": session.get('username'), "is_admin":True},
+                                        {"_id": 1, "username": 1, "email": 1, "name": 1, "lastname": 1})
+    if result:
+        return render_template('admin-panel.html', result=result)
+
+    return Response("permission denied <a href=\"/login\">first login</a>", status=403)
 
 
 app.run()
