@@ -24,15 +24,15 @@ def register():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        if CustomerModel.find_one({"username":username}):
-            return render_template('register.html',error="این یوزرنیم قبلا ثبت شده")
+        if CustomerModel.find_one({"username": username}):
+            return render_template('register.html', error="این یوزرنیم قبلا ثبت شده")
         email = request.form['email']
         name = request.form['name']
         lastname = request.form['lastname']
         data = {"username": username, "password": password, "email": email, "name": name, "lastname": lastname}
 
         CustomerModel.insert_one(data)
-        return redirect('/login',code=302)
+        return redirect('/login', code=302)
 
     if request.method == 'GET':
         return render_template('register.html')
@@ -50,7 +50,7 @@ def login():
         if customer:
             session['username'] = username
             return redirect("/profile", code=302)
-        return Response("your pass or user name is incorrect", status=400)
+        return render_template('login.html',error="یوزرنیم یا پسسورد صحیح نمی باشد")
 
     elif request.method == 'GET':
         return render_template('login.html')
@@ -76,7 +76,6 @@ def profile():
 
 @app.route('/books', methods=['GET', 'POST'])
 def book_list():
-
     if session.get('username'):
         if request.method == 'GET':
 
@@ -103,12 +102,12 @@ def book_list():
                                               {"_id": 1, "username": 1, "email": 1, "name": 1, "lastname": 1})
                 book_id = request.form.get('book_id')
                 book = BookModel.find_one({"_id": ObjectId(book_id)})
-                OrderModel.insert_one({"book_id": book["_id"], "customer_id": user["_id"],"borrowed_date":datetime.now()})
+                OrderModel.insert_one(
+                    {"book_id": book["_id"], "customer_id": user["_id"], "borrowed_date": datetime.now()})
 
                 myquery = {"_id": ObjectId(book["_id"])}
                 newvalues = {"$set": {"count": book['count'] - 1}}
                 BookModel.update_one(myquery, newvalues)
-
 
                 return redirect("/books", code=302)
     else:
@@ -196,16 +195,16 @@ def admin_login():
         )
         if customer:
             session['username'] = username
-            return redirect("/admin/insert-book", code=302)
-        return render_template('admin-panel.html')
+            return redirect("/admin/panel", code=302)
+        return render_template('admin-login.html',error="این ادمین یافت نشد")
 
     elif request.method == 'GET':
-        return redirect('admin/panel')
+        return render_template('admin-login.html')
 
 
 @app.route('/admin/borrowed-books', methods=['GET', 'POST'])
 def admin_management_costumer_book_list():
-    if CustomerModel.find_one({"username":session.get('username'),"is_admin":True}):
+    if CustomerModel.find_one({"username": session.get('username'), "is_admin": True}):
         if request.method == 'GET':
             pipeline = [
                 {
@@ -273,7 +272,7 @@ def admin_management_costumer_book_list():
 
 @app.route('/admin/insert-book', methods=['POST', 'get'])
 def admin_insert_book():
-    if CustomerModel.find_one({"username":session.get('username'),"is_admin":True}):
+    if CustomerModel.find_one({"username": session.get('username'), "is_admin": True}):
         if request.method == 'POST':
             title = request.form['title']
             description = request.form['description']
@@ -312,13 +311,14 @@ def admin_insert_book():
 
 
 @app.route('/admin/panel', methods=['GET'])
-def profile():
-    result =CustomerModel.find_one({"username": session.get('username'), "is_admin":True},
-                                        {"_id": 1, "username": 1, "email": 1, "name": 1, "lastname": 1})
+def admin_panel():
+    result = CustomerModel.find_one({"username": session.get('username'), "is_admin": True},
+                                    {"_id": 1, "username": 1, "email": 1, "name": 1, "lastname": 1})
+    print(result)
     if result:
         return render_template('admin-panel.html', result=result)
 
-    return Response("permission denied <a href=\"/login\">first login</a>", status=403)
+    return Response("permission denied <a href=\"/admin/login\">first login</a>", status=403)
 
 
 app.run()
